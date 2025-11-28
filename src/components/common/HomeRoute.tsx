@@ -11,6 +11,8 @@ const HomeRoute = () => {
       return <Navigate to="/admin/dashboard" replace />;
     } else if (user.role === 'Fiduciary') {
       return <Navigate to="/fiduciary/dashboard" replace />;
+    } else if (user.role === 'User') {
+      return <Navigate to="/user/dashboard" replace />;
     }
   }
 

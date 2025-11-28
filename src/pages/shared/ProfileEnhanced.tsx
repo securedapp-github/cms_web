@@ -1,9 +1,13 @@
-import { User, Mail, Phone, Calendar, Shield, Edit2, Save, X, Lock, Camera, Globe, Users2, LogOut } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Shield, Edit2, Save, X, Lock, Camera, Globe, Users2, LogOut, Plus, UserCog, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useProfile } from '../../hooks/queries/useProfile';
+import { useDPO } from '../../hooks/queries/useDPO';
+import { DPOCard } from '../../components/fiduciary/DPOCard';
+import { DPOModal } from '../../components/fiduciary/DPOModal';
+import type { DPO } from '../../types/fiduciary.types';
 
 const Profile = () => {
   const { user, logout } = useAuth();
@@ -13,6 +17,14 @@ const Profile = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  
+  // DPO Management (only for fiduciaries)
+  const isFiduciary = user?.role?.toLowerCase() === 'fiduciary';
+  const { dpos, isLoading: isDPOLoading, isSubmitting: isDPOSubmitting, addDPO, updateDPO: updateDPOFunc, deleteDPO } = useDPO(isFiduciary);
+  const [showDPOModal, setShowDPOModal] = useState(false);
+  const [selectedDPO, setSelectedDPO] = useState<DPO | null>(null);
+  const [dpoToDelete, setDPOToDelete] = useState<DPO | null>(null);
+  const [showDeleteDPOConfirm, setShowDeleteDPOConfirm] = useState(false);
   
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -188,6 +200,41 @@ const Profile = () => {
     return name.substring(0, 2).toUpperCase();
   };
 
+  // DPO Handlers
+  const handleAddDPO = () => {
+    setSelectedDPO(null);
+    setShowDPOModal(true);
+  };
+
+  const handleEditDPO = (dpo: DPO) => {
+    setSelectedDPO(dpo);
+    setShowDPOModal(true);
+  };
+
+  const handleDeleteDPO = (dpo: DPO) => {
+    setDPOToDelete(dpo);
+    setShowDeleteDPOConfirm(true);
+  };
+
+  const confirmDeleteDPO = async () => {
+    if (!dpoToDelete) return;
+    try {
+      await deleteDPO(dpoToDelete.id);
+      setShowDeleteDPOConfirm(false);
+      setDPOToDelete(null);
+    } catch (error) {
+      // Error already handled by hook
+    }
+  };
+
+  const handleDPOSubmit = async (data: any) => {
+    if (selectedDPO) {
+      await updateDPOFunc({ id: selectedDPO.id, data });
+    } else {
+      await addDPO(data);
+    }
+  };
+
   const getRoleBadgeColor = (role: string) => {
     return role === 'fiduciary' 
       ? 'bg-blue-100 text-blue-700 border-blue-300'
@@ -210,6 +257,7 @@ const Profile = () => {
             <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
           </div>
         ) : (
+        <>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Profile Card */}
           <div className="lg:col-span-2">
@@ -465,7 +513,72 @@ const Profile = () => {
             </div>
           </div>
         </div>
-      
+
+        {/* Data Protection Officers Section - Only for Fiduciaries */}
+        {isFiduciary && (
+          <div className="mt-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              {/* Section Header */}
+              <div className="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <UserCog className="w-6 h-6" />
+                    Data Protection Officers
+                  </h2>
+                  <p className="text-blue-100 text-sm mt-1">
+                    Manage your DPO contacts
+                  </p>
+                </div>
+                <button
+                  onClick={handleAddDPO}
+                  className="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-2 font-medium shadow-md"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add DPO
+                </button>
+              </div>
+
+              {/* DPO List */}
+              <div className="p-6">
+                {isDPOLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                  </div>
+                ) : dpos.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <UserCog className="w-8 h-8 text-blue-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No DPO Added Yet</h3>
+                    <p className="text-gray-600 mb-4">
+                      Add a Data Protection Officer to get started
+                    </p>
+                    <button
+                      onClick={handleAddDPO}
+                      className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2 font-medium"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Your First DPO
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {dpos.filter(dpo => dpo && dpo.id).map((dpo) => (
+                      <DPOCard
+                        key={dpo.id}
+                        dpo={dpo}
+                        onEdit={handleEditDPO}
+                        onDelete={handleDeleteDPO}
+                        showActions={true}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        </>
         )}
 
         {/* Change Password Modal */}
@@ -596,6 +709,62 @@ const Profile = () => {
                 >
                   <LogOut className="w-4 h-4" />
                   Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DPO Management Modal */}
+      {isFiduciary && (
+        <DPOModal
+          isOpen={showDPOModal}
+          onClose={() => {
+            setShowDPOModal(false);
+            setSelectedDPO(null);
+          }}
+          onSubmit={handleDPOSubmit}
+          dpo={selectedDPO}
+          isSubmitting={isDPOSubmitting}
+        />
+      )}
+
+      {/* Delete DPO Confirmation Modal */}
+      {isFiduciary && showDeleteDPOConfirm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+            <div className="p-6 sm:p-8">
+              <div className="flex items-center justify-center mb-6">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                  <UserCog className="w-8 h-8 text-red-600" />
+                </div>
+              </div>
+
+              <h2 className="text-xl font-bold text-gray-900 text-center mb-3">Delete DPO</h2>
+              <p className="text-gray-600 text-center mb-6">
+                Are you sure you want to delete <span className="font-semibold">{dpoToDelete?.name}</span>? This action cannot be undone.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDeleteDPOConfirm(false);
+                    setDPOToDelete(null);
+                  }}
+                  className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteDPO}
+                  disabled={isDPOSubmitting}
+                  className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isDPOSubmitting ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
             </div>

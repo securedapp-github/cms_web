@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Shield, ChevronDown, ChevronUp, Loader2, Link2, Plus, Key, Code2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Shield, ChevronDown, ChevronUp, Loader2, Link2, Plus, Key, Code2, Search, Filter } from 'lucide-react';
 import { useConsents } from '../../hooks/queries/useConsents';
 import { useWebhooks } from '../../hooks/queries/useWebhooks';
 import { useApiKeys } from '../../hooks/queries/useApiKeys';
@@ -12,10 +12,18 @@ import ApiKeyModal from '../../components/fiduciary/ApiKeyModal';
 import ApiKeySuccessModal from '../../components/fiduciary/ApiKeySuccessModal';
 import PurposeCodeRow from '../../components/fiduciary/PurposeCodeRow';
 import PurposeCodeModal from '../../components/fiduciary/PurposeCodeModal';
+import ConsentFilterModal, { type FilterValues } from '../../components/fiduciary/ConsentFilterModal';
 import Pagination from '../../components/common/Pagination';
 
 const FiduciaryDashboard = () => {
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [filters, setFilters] = useState<FilterValues>({
+    status: 'all',
+    dateFrom: '',
+    dateTo: '',
+  });
+  const [showFilterModal, setShowFilterModal] = useState(false);
   const [consentsPage, setConsentsPage] = useState(1);
   const [webhooksPage, setWebhooksPage] = useState(1);
   const [apiKeysPage, setApiKeysPage] = useState(1);
@@ -31,9 +39,36 @@ const FiduciaryDashboard = () => {
   const [isWebhooksExpanded, setIsWebhooksExpanded] = useState(true);
   const [isApiKeysExpanded, setIsApiKeysExpanded] = useState(true);
   const [isPurposeCodesExpanded, setIsPurposeCodesExpanded] = useState(true);
+
+  // Debounce search query with 500ms timeout
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setConsentsPage(1); // Reset to first page on search
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setConsentsPage(1);
+  }, [filters]);
+
+  const handleApplyFilters = (newFilters: FilterValues) => {
+    setFilters(newFilters);
+  };
+
+  // Count active filters
+  const activeFiltersCount = 
+    (filters.status !== 'all' ? 1 : 0) + 
+    (filters.dateFrom ? 1 : 0) + 
+    (filters.dateTo ? 1 : 0);
   
   const { consents, counts, pagination: consentsPagination, isLoading, error } = useConsents({
-    status: statusFilter === 'all' ? undefined : statusFilter,
+    status: filters.status === 'all' ? undefined : filters.status,
+    searchterm: debouncedSearch,
+    dateFrom: filters.dateFrom || undefined,
+    dateTo: filters.dateTo || undefined,
     page: consentsPage,
     limit: 10,
   });
@@ -157,19 +192,33 @@ const FiduciaryDashboard = () => {
                 </h2>
               </div>
               
-              {/* Status Filter */}
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full sm:w-auto px-3 md:px-4 py-2 md:py-2.5 rounded-xl border-2 border-slate-200 text-xs md:text-sm font-medium text-slate-700 bg-white hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
+              {/* Search and Filter */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                {/* Search Input */}
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search consents..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 md:py-2.5 rounded-xl border-2 border-slate-200 text-xs md:text-sm font-medium text-slate-700 bg-white hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
+                  />
+                </div>
+                
+                {/* Filter Button */}
+                <button
+                  onClick={() => setShowFilterModal(true)}
+                  className="relative flex items-center gap-2 px-4 py-2 md:py-2.5 rounded-xl border-2 border-slate-200 text-xs md:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300 cursor-pointer"
                 >
-                  <option value="all">All Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="active">Active</option>
-                  <option value="suspended">Suspended</option>
-                  <option value="expired">Expired</option>
-                </select>
+                  <Filter className="w-4 h-4" />
+                  <span>Filters</span>
+                  {activeFiltersCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      {activeFiltersCount}
+                    </span>
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -203,9 +252,9 @@ const FiduciaryDashboard = () => {
                   No consent requests
                 </h3>
                 <p className="text-slate-600">
-                  {statusFilter === 'all' 
-                    ? 'You have no consent requests yet.'
-                    : `No ${statusFilter} consent requests found.`}
+                  {searchQuery || activeFiltersCount > 0
+                    ? 'No consent requests match your filters.'
+                    : 'You have no consent requests yet.'}
                 </p>
               </div>
             ) : (
@@ -218,7 +267,7 @@ const FiduciaryDashboard = () => {
                       <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">User</th>
                       <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Data/Purpose</th>
                       <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Requested</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Expiry</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Phone</th>
                       <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Status</th>
                       <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -616,6 +665,14 @@ const FiduciaryDashboard = () => {
           onClose={() => setShowPurposeCodeModal(false)}
         />
       )}
+
+      {/* Consent Filter Modal */}
+      <ConsentFilterModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        onApplyFilters={handleApplyFilters}
+        currentFilters={filters}
+      />
     </div>
   );
 };

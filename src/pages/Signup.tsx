@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Phone, Globe, Shield, Check } from 'lucide-react';
+import { Mail, Lock, User, Phone, Globe, Shield, Check, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AuthLayout from '../components/layout/AuthLayout';
 import Input from '../components/common/Input';
@@ -97,7 +97,21 @@ const Signup: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Select Role <span className="text-rose-500">*</span>
           </label>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-3">
+            <label className="relative flex items-center justify-center cursor-pointer">
+              <input
+                type="radio"
+                value="User"
+                className="absolute opacity-0 peer"
+                {...register('role')}
+              />
+              <div className="w-full px-3 py-3 border-2 border-gray-300 rounded-lg peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:shadow-md transition-all hover:border-indigo-400">
+                <div className="flex flex-col items-center gap-2">
+                  <Users className="h-5 w-5 text-gray-600 peer-checked:text-indigo-700" />
+                  <span className="font-medium text-sm text-gray-700 peer-checked:text-indigo-900">User</span>
+                </div>
+              </div>
+            </label>
             <label className="relative flex items-center justify-center cursor-pointer">
               <input
                 type="radio"
@@ -105,9 +119,9 @@ const Signup: React.FC = () => {
                 className="absolute opacity-0 peer"
                 {...register('role')}
               />
-              <div className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg peer-checked:border-blue-600 peer-checked:bg-blue-50 peer-checked:shadow-md transition-all hover:border-blue-400">
+              <div className="w-full px-3 py-3 border-2 border-gray-300 rounded-lg peer-checked:border-blue-600 peer-checked:bg-blue-50 peer-checked:shadow-md transition-all hover:border-blue-400">
                 <div className="flex flex-col items-center gap-2">
-                  <Shield className="h-5 w-5 text-primary-900 peer-checked:text-blue-700" />
+                  <Shield className="h-5 w-5 text-gray-600 peer-checked:text-blue-700" />
                   <span className="font-medium text-sm text-gray-700 peer-checked:text-blue-900">Fiduciary</span>
                 </div>
               </div>
@@ -119,10 +133,10 @@ const Signup: React.FC = () => {
                 className="absolute opacity-0 peer"
                 {...register('role')}
               />
-              <div className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg peer-checked:border-blue-600 peer-checked:bg-blue-50 peer-checked:shadow-md transition-all hover:border-blue-400">
+              <div className="w-full px-3 py-3 border-2 border-gray-300 rounded-lg peer-checked:border-purple-600 peer-checked:bg-purple-50 peer-checked:shadow-md transition-all hover:border-purple-400">
                 <div className="flex flex-col items-center gap-2">
-                  <Shield className="h-5 w-5 text-primary-900 peer-checked:text-blue-700" />
-                  <span className="font-medium text-sm text-gray-700 peer-checked:text-blue-900">Admin</span>
+                  <Shield className="h-5 w-5 text-gray-600 peer-checked:text-purple-700" />
+                  <span className="font-medium text-sm text-gray-700 peer-checked:text-purple-900">Admin</span>
                 </div>
               </div>
             </label>

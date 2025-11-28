@@ -9,7 +9,7 @@ import type { Fiduciary } from '../../types/admin.types';
 const FiduciariesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter] = useState<string>('all');
   const [selectedFiduciary, setSelectedFiduciary] = useState<Fiduciary | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [page, setPage] = useState(1);

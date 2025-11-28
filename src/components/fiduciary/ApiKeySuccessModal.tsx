@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Key, Copy, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Copy, CheckCircle, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ApiKeySuccessModalProps {

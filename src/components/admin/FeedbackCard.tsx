@@ -47,7 +47,7 @@ const FeedbackCard = ({ feedback, onRespond }: FeedbackCardProps) => {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="text-sm font-bold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">{feedback.name}</h3>
-              <span className={`px-2 py-0.5 rounded text-xs font-bold border-2 shrink-0 ${getCategoryColor(feedback.category)}`}>
+              <span className={`px-2 py-0.5 rounded text-xs font-bold border-2 shrink-0 ${getCategoryColor(feedback.category || '')}`}>
                 {feedback.category}
               </span>
             </div>

@@ -82,15 +82,15 @@ const ConsentRow = ({ consent, index }: ConsentRowProps) => {
               </p>
             </div>
 
-            {/* Dates */}
+            {/* Dates and Phone */}
             <div className="flex items-center justify-between text-xs text-slate-600 mb-3">
               <div className="flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-slate-400" />
                 <span>{formatDate(consent.time_and_date || consent.created_at || consent.requested_at)}</span>
               </div>
-              {(consent.expiry || consent.expires_at) && (
-                <span className="text-amber-600">
-                  Exp: {consent.expiry || formatDate(consent.expires_at)}
+              {consent.user_mobile && (
+                <span className="text-indigo-600 font-medium">
+                  📞 {consent.user_mobile}
                 </span>
               )}
             </div>
@@ -119,9 +119,9 @@ const ConsentRow = ({ consent, index }: ConsentRowProps) => {
         {/* ID */}
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shadow-sm group-hover:shadow-md transition-shadow duration-300">
+            {/* <div className="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shadow-sm group-hover:shadow-md transition-shadow duration-300">
               {consent.consent_id?.toString().slice(-3) || consent.id?.toString().slice(-3) || '---'}
-            </div>
+            </div> */}
             <span className="text-sm font-mono text-slate-600">
               #{consent.consent_id || consent.id}
             </span>
@@ -163,10 +163,10 @@ const ConsentRow = ({ consent, index }: ConsentRowProps) => {
           </div>
         </td>
 
-        {/* Expiry */}
+        {/* Phone Number */}
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-sm text-slate-600">
-            {consent.expiry || formatDate(consent.expires_at) || 'N/A'}
+          <div className="text-sm text-slate-700 font-medium">
+            {consent.user_mobile || 'N/A'}
           </div>
         </td>
 

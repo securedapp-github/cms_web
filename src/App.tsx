@@ -18,7 +18,13 @@ import ResetPassword from './pages/ResetPassword';
 // Fiduciary Pages
 import FiduciaryDashboard from './pages/fiduciary/Dashboard';
 import EventsPage from './pages/fiduciary/EventsPage';
-import HelpCenter from './pages/fiduciary/HelpCenter';
+import FiduciaryHelpCenter from './pages/fiduciary/HelpCenter';
+
+// User Pages
+import UserDashboard from './pages/user/Dashboard.tsx';
+import UserHelpCenter from './pages/user/HelpCenter';
+import UserNotifications from './pages/user/Notifications';
+import FiduciaryDetailsPage from './pages/user/FiduciaryDetails';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -71,13 +77,22 @@ function App() {
           <Route path="/verify-reset-token" element={<VerifyResetToken />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Fiduciary Routes */}
           <Route path="/fiduciary" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="dashboard" element={<FiduciaryDashboard />} />
             <Route path="events" element={<EventsPage />} />
-            <Route path="help-center" element={<HelpCenter />} />
+            <Route path="help-center" element={<FiduciaryHelpCenter />} />
             <Route path="profile" element={<Profile />} />
             <Route index element={<Navigate to="/fiduciary/dashboard" replace />} />
+          </Route>
+
+          {/* User Routes */}
+          <Route path="/user" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+            <Route path="dashboard" element={<UserDashboard />} />
+            <Route path="notifications" element={<UserNotifications />} />
+            <Route path="fiduciary/:id" element={<FiduciaryDetailsPage />} />
+            <Route path="help-center" element={<UserHelpCenter />} />
+            <Route path="profile" element={<Profile />} />
+            <Route index element={<Navigate to="/user/dashboard" replace />} />
           </Route>
 
           {/* Admin Routes */}

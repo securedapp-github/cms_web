@@ -8,6 +8,12 @@ import type {
   EventsResponse,
   FeedbackRequest,
   ApiResponse,
+  AddDPORequest,
+  UpdateDPORequest,
+  AddDPOResponse,
+  UpdateDPOResponse,
+  DeleteDPOResponse,
+  GetDPOsResponse,
 } from '../types/fiduciary.types';
 
 // Consent Management APIs
@@ -15,6 +21,9 @@ export const getMyConsentRequests = async (filters?: {
   status?: string;
   userEmail?: string;
   search?: string;
+  searchterm?: string;
+  dateFrom?: string;
+  dateTo?: string;
   page?: number;
   limit?: number;
 }): Promise<ConsentsResponse> => {
@@ -22,6 +31,9 @@ export const getMyConsentRequests = async (filters?: {
   if (filters?.status && filters.status !== 'all') params.append('status', filters.status);
   if (filters?.userEmail) params.append('userEmail', filters.userEmail);
   if (filters?.search) params.append('search', filters.search);
+  if (filters?.searchterm) params.append('searchterm', filters.searchterm);
+  if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
+  if (filters?.dateTo) params.append('dateTo', filters.dateTo);
   if (filters?.page) params.append('page', filters.page.toString());
   if (filters?.limit) params.append('limit', filters.limit.toString());
 
@@ -163,4 +175,37 @@ export const getFiduciaryEvents = async (filters?: {
 export const submitFeedback = async (data: FeedbackRequest): Promise<ApiResponse> => {
   const response = await api.post('/feedback', data);
   return response.data;
+};
+
+// DPO (Data Protection Officer) APIs
+export const addDPO = async (data: AddDPORequest): Promise<AddDPOResponse> => {
+  const response = await api.post('/dpo', data);
+  return response.data;
+};
+
+export const updateDPO = async (id: number, data: UpdateDPORequest): Promise<UpdateDPOResponse> => {
+  const response = await api.put(`/dpo/${id}`, data);
+  return response.data;
+};
+
+export const deleteDPO = async (id: number): Promise<DeleteDPOResponse> => {
+  const response = await api.delete(`/dpo/${id}`);
+  return response.data;
+};
+
+export const getMyDPOs = async (): Promise<GetDPOsResponse> => {
+  const response = await api.get('/dpo');
+  const data = response.data;
+  
+  // API returns 'dpos' but our interface expects 'dataProtectionOfficers'
+  // Transform the response to match our interface
+  if (data.success && data.dpos) {
+    return {
+      success: data.success,
+      message: data.message,
+      dataProtectionOfficers: data.dpos,
+    };
+  }
+  
+  return data;
 };

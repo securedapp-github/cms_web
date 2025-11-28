@@ -12,7 +12,7 @@ export const registerSchema = z.object({
     .optional()
     .or(z.literal('')),
   language: z.string().optional(),
-  role: z.enum(['Fiduciary', 'Admin'], {
+  role: z.enum(['User', 'Fiduciary', 'Admin'], {
     message: 'Please select a role',
   }),
   password: z.string()
@@ -36,7 +36,7 @@ export const loginSchema = z.object({
     .email('Please enter a valid email address'),
   password: z.string()
     .min(1, 'Password is required'),
-  role: z.enum(['Fiduciary', 'Admin'], {
+  role: z.enum(['User', 'Fiduciary', 'Admin'], {
     message: 'Please select a role',
   }),
   rememberMe: z.boolean().optional(),

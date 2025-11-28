@@ -2,6 +2,7 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import FiduciaryNavbar from './FiduciaryNavbar';
 import AdminNavbar from './AdminNavbar';
+import UserNavbar from './UserNavbar';
 
 const AppLayout = () => {
   const { user } = useAuth();
@@ -16,6 +17,8 @@ const AppLayout = () => {
       return <FiduciaryNavbar />;
     } else if (user.role === 'Admin') {
       return <AdminNavbar />;
+    } else if (user.role === 'User') {
+      return <UserNavbar />;
     }
     return null;
   };

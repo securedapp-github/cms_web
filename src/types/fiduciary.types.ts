@@ -218,3 +218,51 @@ export interface ApiResponse {
   success: boolean;
   message: string;
 }
+
+// DPO (Data Protection Officer) Types
+export interface DPO {
+  id: number;
+  fiduciary_id: number;
+  name: string;
+  email: string;
+  phone: string;
+  is_primary: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AddDPORequest {
+  name: string;
+  email: string;
+  phone: string;
+  isPrimary?: boolean;
+}
+
+export interface UpdateDPORequest {
+  name: string;
+  email: string;
+  phone: string;
+  isPrimary?: boolean;
+}
+
+export interface AddDPOResponse {
+  success: boolean;
+  message: string;
+  dpoId?: number;
+}
+
+export interface UpdateDPOResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface DeleteDPOResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface GetDPOsResponse {
+  success: boolean;
+  message?: string;
+  dataProtectionOfficers?: DPO[];
+}

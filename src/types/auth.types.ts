@@ -1,4 +1,4 @@
-export type UserRole = 'Fiduciary' | 'Admin';
+export type UserRole = 'Fiduciary' | 'Admin' | 'User';
 
 export type UserStatus = 'Active' | 'Suspended' | 'Pending';
 

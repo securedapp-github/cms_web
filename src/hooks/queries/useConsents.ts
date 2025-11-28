@@ -5,6 +5,10 @@ import toast from 'react-hot-toast';
 export const useConsents = (filters?: { 
   status?: string; 
   search?: string;
+  searchterm?: string;
+  userEmail?: string;
+  dateFrom?: string;
+  dateTo?: string;
   page?: number;
   limit?: number;
 }) => {

@@ -239,11 +239,14 @@ const Signup: React.FC = () => {
           />
           <label htmlFor="terms" className="text-sm text-gray-600">
             I agree to the{' '}
-            <a href="#" className="text-primary-900 hover:underline font-medium">
+            <a href="https://docs.google.com/document/d/1nbUfuasIK6ADGWet3C-RR7IxAFrkUWLAPsGCZDvn86Q/edit?usp=sharing"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary-900 hover:underline font-medium">
               Terms & Conditions
             </a>{' '}
             and{' '}
-            <a href="#" className="text-primary-900 hover:underline font-medium">
+            <a href="https://docs.google.com/document/d/1aDsmIuq8nM_0abq6xvcPenXXqGKN6ac59_QbOKRDbQQ/edit?usp=sharing" target="_blank" rel="noopener noreferrer" className="text-primary-900 hover:underline font-medium">
               Privacy Policy
             </a>
           </label>

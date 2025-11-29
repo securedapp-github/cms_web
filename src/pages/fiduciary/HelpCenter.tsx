@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MessageCircle, Mail, Phone } from 'lucide-react';
+import { MessageCircle, Mail, Phone, ExternalLink, FileText, Shield } from 'lucide-react';
 import { useFeedback } from '../../hooks/queries/useFeedback';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -262,6 +262,49 @@ const HelpCenter = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Legal Documents */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <a
+            href="https://docs.google.com/document/d/1nbUfuasIK6ADGWet3C-RR7IxAFrkUWLAPsGCZDvn86Q/edit?usp=sharing"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group bg-white border-2 border-indigo-200 hover:border-indigo-400 rounded-2xl p-6 md:p-8 transition-all hover:shadow-xl"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-14 h-14 bg-linear-to-br from-indigo-100 to-indigo-50 rounded-xl flex items-center justify-center group-hover:from-indigo-200 group-hover:to-indigo-100 transition-all">
+                <FileText className="w-7 h-7 text-indigo-600" />
+              </div>
+              <ExternalLink className="w-5 h-5 text-indigo-400 group-hover:text-indigo-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">
+              Terms of Service
+            </h3>
+            <p className="text-sm text-slate-600">
+              Read our terms and conditions for using Secure CMS platform
+            </p>
+          </a>
+
+          <a
+            href="https://docs.google.com/document/d/1aDsmIuq8nM_0abq6xvcPenXXqGKN6ac59_QbOKRDbQQ/edit?usp=sharing"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group bg-white border-2 border-violet-200 hover:border-violet-400 rounded-2xl p-6 md:p-8 transition-all hover:shadow-xl"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-14 h-14 bg-linear-to-br from-violet-100 to-violet-50 rounded-xl flex items-center justify-center group-hover:from-violet-200 group-hover:to-violet-100 transition-all">
+                <Shield className="w-7 h-7 text-violet-600" />
+              </div>
+              <ExternalLink className="w-5 h-5 text-violet-400 group-hover:text-violet-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-violet-600 transition-colors">
+              Privacy Policy
+            </h3>
+            <p className="text-sm text-slate-600">
+              Learn how we protect and handle your personal data
+            </p>
+          </a>
         </div>
       </div>
     </div>

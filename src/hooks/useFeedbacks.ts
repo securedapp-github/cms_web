@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getFeedbacks, sendFeedbackResponse as sendResponseAPI } from '../services/admin.service';
 import type { Feedback, Pagination } from '../types/admin.types';
 import toast from 'react-hot-toast';
@@ -15,7 +15,7 @@ export const useFeedbacks = (params?: UseFeedbacksParams) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchFeedbacks = async (isRefresh = false) => {
+  const fetchFeedbacks = useCallback(async (isRefresh = false) => {
     try {
       isRefresh ? setIsRefreshing(true) : setIsLoading(true);
       const response = await getFeedbacks(params);
@@ -34,9 +34,9 @@ export const useFeedbacks = (params?: UseFeedbacksParams) => {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, [params]);
 
-  const sendResponse = async (feedbackId: number, response: string) => {
+  const sendResponse = useCallback(async (feedbackId: number, response: string) => {
     try {
       await sendResponseAPI(feedbackId, response);
       toast.success('Response sent successfully');
@@ -47,11 +47,11 @@ export const useFeedbacks = (params?: UseFeedbacksParams) => {
       toast.error(message);
       return false;
     }
-  };
+  }, [fetchFeedbacks]);
 
   useEffect(() => {
     fetchFeedbacks();
-  }, [params?.page, params?.limit, params?.searchterm]);
+  }, [fetchFeedbacks]);
 
   // Separate pending and resolved
   const pendingFeedbacks = feedbacks.filter(f => !f.response);

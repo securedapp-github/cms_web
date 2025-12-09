@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Search, Filter, RefreshCw, CheckCircle2, MessageSquare } from 'lucide-react';
 import { useFeedbacks } from '../../hooks/useFeedbacks';
 import FeedbackRow from '../../components/admin/FeedbackRow';
@@ -10,27 +10,33 @@ type CategoryFilter = 'All' | 'Technical' | 'General' | 'Complaint' | 'Suggestio
 
 export default function GrievancesPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [activeSearch, setActiveSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('All');
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [page, setPage] = useState(1);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Debounce search query with 500ms timeout
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setPage(1); // Reset to first page on search
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  const { feedbacks, pagination, isLoading, refetch, sendResponse } = useFeedbacks({
+  // Memoize params to prevent unnecessary re-renders
+  const feedbackParams = useMemo(() => ({
     page,
     limit: 10,
-    searchterm: debouncedSearch,
-  });
+    searchterm: activeSearch,
+  }), [page, activeSearch]);
+
+  const { feedbacks, pagination, isLoading, refetch, sendResponse } = useFeedbacks(feedbackParams);
+
+  const handleSearch = () => {
+    setActiveSearch(searchQuery);
+    setPage(1);
+  };
+
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -101,15 +107,26 @@ export default function GrievancesPage() {
         <div className="bg-white rounded-xl shadow-lg border-2 border-slate-200 p-4 sm:p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search by name, email, or message..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400"
-              />
+            <div className="flex-1 flex gap-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search by name, email, or message..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleSearchKeyPress}
+                  className="w-full pl-10 pr-4 py-2.5 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                />
+              </div>
+              <button
+                onClick={handleSearch}
+                className="px-4 py-2.5 bg-linear-to-r from-indigo-600 to-violet-600 text-white rounded-xl hover:from-indigo-700 hover:to-violet-700 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl font-bold whitespace-nowrap"
+              >
+                <Search className="w-5 h-5" />
+                <span className="hidden sm:inline">Search</span>
+              </button>
             </div>
 
             {/* Category Filter */}
@@ -196,6 +213,7 @@ export default function GrievancesPage() {
                     key={feedback.id}
                     feedback={feedback}
                     onRespond={handleOpenModal}
+                    isMobile={true}
                   />
                 ))}
               </div>
@@ -260,6 +278,7 @@ export default function GrievancesPage() {
                     key={feedback.id}
                     feedback={feedback}
                     onRespond={handleOpenModal}
+                    isMobile={true}
                   />
                 ))}
               </div>

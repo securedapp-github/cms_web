@@ -1,138 +1,174 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
+// src/contexts/AuthContext.tsx
+
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import type { User, LoginRequest } from '../types/auth.types';
-import { storage } from '../utils/storage';
-import authService from '../services/auth.service';
+import { authService } from '@/services/auth.service';
+import { SessionManager, auditLog, rateLimiter } from '@/utils/security';
 import toast from 'react-hot-toast';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../utils/constants';
+
+interface User {
+  id: string;
+  email: string;
+  role: 'fiduciary' | 'admin';
+  name: string;
+  verified: boolean;
+}
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
+  login: (email: string, password: string, role: string, remember: boolean) => Promise<void>;
+  logout: () => void;
+  register: (data: RegisterData) => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (data: LoginRequest, rememberMe?: boolean) => Promise<User>;
-  logout: () => void;
-  setAuthUser: (user: User, token: string, rememberMe?: boolean) => void;
+}
+
+interface RegisterData {
+  email: string;
+  password: string;
+  name: string;
+  role: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface JWTPayload {
-  id: number;
-  email: string;
-  role: string;
-  exp: number;
-}
-
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const sessionManager = new SessionManager();
 
   // Check if token is expired
   const isTokenExpired = (token: string): boolean => {
     try {
-      const decoded = jwtDecode<JWTPayload>(token);
-      const currentTime = Date.now() / 1000;
-      return decoded.exp < currentTime;
+      const decoded: any = jwtDecode(token);
+      return decoded.exp * 1000 < Date.now();
     } catch {
       return true;
     }
   };
 
-  // Initialize auth state from storage
-  useEffect(() => {
-    const initAuth = () => {
-      const storedToken = storage.getToken() || storage.session.getToken();
-      const storedUser = storage.getUser();
+  // Auto logout on session timeout
+  const handleSessionTimeout = useCallback(() => {
+    toast.error('Session expired due to inactivity');
+    auditLog.log('SESSION_TIMEOUT', { user: user?.email });
+    logout();
+  }, [user]);
 
-      if (storedToken && storedUser && !isTokenExpired(storedToken)) {
-        setToken(storedToken);
-        setUser(storedUser);
-      } else {
-        // Token expired or invalid, clear storage
-        storage.clearAuth();
+  // Initialize auth state
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const storedToken = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+
+        if (storedToken && !isTokenExpired(storedToken)) {
+          const decoded: any = jwtDecode(storedToken);
+          setToken(storedToken);
+          setUser({
+            id: decoded.userId,
+            email: decoded.email,
+            role: decoded.role,
+            name: decoded.name,
+            verified: decoded.verified,
+          });
+
+          // Start session monitoring
+          sessionManager.startMonitoring(handleSessionTimeout);
+
+          auditLog.log('SESSION_RESTORED', { email: decoded.email });
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        logout();
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
     };
 
     initAuth();
-  }, []);
 
-  const setAuthUser = (user: User, token: string, rememberMe = false) => {
-    setUser(user);
-    setToken(token);
-    
-    if (rememberMe) {
-      storage.setToken(token);
-      storage.setUser(user);
-    } else {
-      storage.session.setToken(token);
-      storage.setUser(user); // Always store user in localStorage
+    return () => {
+      sessionManager.stopMonitoring();
+    };
+  }, [handleSessionTimeout]);
+
+  // Login function
+  const login = async (email: string, password: string, role: string, remember: boolean) => {
+    // Rate limiting
+    if (!rateLimiter.check(`login_${email}`)) {
+      throw new Error('Too many login attempts. Please try again in 15 minutes.');
     }
-  };
 
-  const login = async (data: LoginRequest, rememberMe = false): Promise<User> => {
     try {
-      console.log('Login attempt with data:', data);
-      const response = await authService.login(data);
-      console.log('Login response:', response);
-      
-      if (response.success) {
-        // Handle both response formats:
-        // Format 1: { success, data: { user, token } }
-        // Format 2: { success, user, token }
-        const user = response.data?.user || (response as any).user;
-        const token = response.data?.token || (response as any).token;
-        
-        if (user && token) {
-          setAuthUser(user, token, rememberMe);
-          toast.success(response.message || SUCCESS_MESSAGES.LOGIN_SUCCESS);
-          return user;
-        } else {
-          throw new Error('Invalid response format');
-        }
+      const response = await authService.login({ email, password, role });
+      const { token: newToken, user: userData } = response.data;
+
+      // Store token
+      if (remember) {
+        localStorage.setItem('auth_token', newToken);
       } else {
-        throw new Error(response.message || ERROR_MESSAGES.INVALID_CREDENTIALS);
+        sessionStorage.setItem('auth_token', newToken);
       }
+
+      setToken(newToken);
+      setUser(userData);
+
+      // Reset rate limiter on successful login
+      rateLimiter.reset(`login_${email}`);
+
+      // Start session monitoring
+      sessionManager.startMonitoring(handleSessionTimeout);
+
+      auditLog.log('LOGIN_SUCCESS', { email, role });
+      toast.success(`Welcome back, ${userData.name}!`);
     } catch (error: any) {
-      console.error('Login error:', error);
-      const errorMessage = error.message || ERROR_MESSAGES.INVALID_CREDENTIALS;
-      toast.error(errorMessage);
+      auditLog.log('LOGIN_FAILED', { email, error: error.message });
       throw error;
     }
   };
 
+  // Logout function
   const logout = () => {
-    setUser(null);
+    localStorage.removeItem('auth_token');
+    sessionStorage.removeItem('auth_token');
     setToken(null);
-    storage.clearAuth();
-    storage.session.removeToken();
-    toast.success(SUCCESS_MESSAGES.LOGOUT_SUCCESS);
+    setUser(null);
+    sessionManager.stopMonitoring();
+
+    auditLog.log('LOGOUT', { email: user?.email });
+    toast.success('Logged out successfully');
+  };
+
+  // Register function
+  const register = async (data: RegisterData) => {
+    try {
+      await authService.register(data);
+      auditLog.log('REGISTRATION', { email: data.email, role: data.role });
+      toast.success('Registration successful! Please verify your email.');
+    } catch (error: any) {
+      auditLog.log('REGISTRATION_FAILED', { email: data.email, error: error.message });
+      throw error;
+    }
   };
 
   const value: AuthContextType = {
     user,
     token,
-    isAuthenticated: !!user && !!token,
-    isLoading,
     login,
     logout,
-    setAuthUser,
+    register,
+    isAuthenticated: !!token && !!user,
+    isLoading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
   }
-  
   return context;
 };

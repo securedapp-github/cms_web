@@ -35,7 +35,9 @@ body::after {
   z-index: 0;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
 }
 
@@ -43,7 +45,7 @@ html, body, #root {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px) saturate(120%);
   border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 
+  box-shadow:
     0 4px 16px 0 rgba(99, 102, 241, 0.08),
     0 8px 16px -4px rgba(0, 0, 0, 0.08);
 }
@@ -58,12 +60,16 @@ html, body, #root {
 
 /* Blob animations for decorative circles */
 @keyframes blob {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
+
   33% {
     transform: translate(30px, -50px) scale(1.1);
   }
+
   66% {
     transform: translate(-20px, 20px) scale(0.9);
   }
@@ -114,3 +120,50 @@ a {
   transform: scale(1.05);
 }
 
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .animate-scaleIn {
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  .animate-bounce-subtle {
+    animation: bounceSubtle 2s infinite;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes bounceSubtle {
+
+    0%,
+    100% {
+      transform: translateY(-5%);
+    }
+
+    50% {
+      transform: translateY(5%);
+    }
+  }
+}

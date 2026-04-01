@@ -432,7 +432,7 @@ function Hero() {
               <span>Start Your Journey</span>
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <Link to="/login" className="bg-white text-gray-800 px-8 py-4 rounded-lg hover:bg-gray-50 transition-all border-2 border-gray-200 text-lg font-semibold">
+            <Link to="https://cms-app.securedapp.io" className="bg-white text-gray-800 px-8 py-4 rounded-lg hover:bg-gray-50 transition-all border-2 border-gray-200 text-lg font-semibold">
               Sign In
             </Link>
           </div>

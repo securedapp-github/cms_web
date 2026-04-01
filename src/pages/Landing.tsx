@@ -386,12 +386,19 @@ function Header() {
               </Link>
             ) : (
               <>
-                <Link to="/login" className="text-gray-700 hover:text-blue-600 transition-colors">
-                  Sign In
-                </Link>
-                <Link to="/signup" className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                  Get Started
-                </Link>
+                <Link
+  to="https://cms-app.securedapp.io"
+  className="text-gray-700 hover:text-blue-600 transition-colors"
+>
+  Sign In
+</Link>
+
+<Link
+  to="https://cms-app.securedapp.io"
+  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+>
+  Get Started
+</Link>
               </>
             )}
           </div>
@@ -421,7 +428,7 @@ function Hero() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/signup" className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-all flex items-center space-x-2 text-lg font-semibold shadow-lg hover:shadow-xl">
+            <Link to="https://cms-app.securedapp.io" className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-all flex items-center space-x-2 text-lg font-semibold shadow-lg hover:shadow-xl">
               <span>Start Your Journey</span>
               <ArrowRight className="w-5 h-5" />
             </Link>

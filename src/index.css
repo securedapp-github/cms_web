@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #ffffff;
+  --color-surface: #ffffff;
+  --color-primary-400: #fbbf24;
+  --color-primary-500: #f59e0b;
+  --color-primary-600: #d97706;
+  --color-primary-700: #b45309;
+  --color-secondary-400: #60a5fa;
+  --color-secondary-500: #3b82f6;
+  --color-secondary-600: #2563eb;
+  --color-secondary-700: #1d4ed8;
+  --color-accent: #f59e0b;
+  
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-900: #111827;
+
+  --background-image-hero-glow: radial-gradient(circle at 50% -20%, #f59e0b11 0%, #3b82f60a 50%, transparent 100%);
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-delayed: float 6s ease-in-out 3s infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-glow: glow 2s ease-in-out infinite alternate;
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-gray-900 overflow-x-hidden antialiased;
+    background: linear-gradient(to bottom right, #f8fafc, #ffffff, #f1f5f9);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-gray-200/50 rounded-2xl;
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-xl border border-gray-100 shadow-xl shadow-gray-200/50 transition-all duration-300;
+  }
+
+  .glass-card:hover {
+    @apply border-secondary-500/30 shadow-secondary-500/10 bg-white;
+  }
+  
+  .text-shadow-glow {
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.2), 0 0 20px rgba(245, 158, 11, 0.1);
+  }
+
+  .text-shadow-glow-green {
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.2), 0 0 20px rgba(59, 130, 246, 0.1);
+  }
+
+  /* 3D Dashboard Perspective utils */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .transform-3d {
+    transform-style: preserve-3d;
+  }
+}
+
+/* Custom background grid for the futuristic feel */
+.bg-grid {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+}
+
+.gradient-text {
+  color: transparent;
+  background: linear-gradient(135deg, #f59e0b, #d97706, #b45309);
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-weight: 800;
+}
